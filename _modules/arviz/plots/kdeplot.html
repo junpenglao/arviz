@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arviz.plots.kdeplot &mdash; ArviZ 0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ArviZ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>arviz.plots.kdeplot</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for arviz.plots.kdeplot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="k">import</span> <span class="n">gaussian</span><span class="p">,</span> <span class="n">convolve</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">entropy</span>
+
+
+<div class="viewcode-block" id="kdeplot"><a class="viewcode-back" href="../../../api/plots.html#arviz.plots.kdeplot">[docs]</a><span class="k">def</span> <span class="nf">kdeplot</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shade</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color_shade</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kwargs_shade</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    1D KDE plot taking into account boundary conditions</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : array-like</span>
+<span class="sd">        Values to plot</span>
+<span class="sd">    label : string</span>
+<span class="sd">        Text to include as part of the legend</span>
+<span class="sd">    shade : float</span>
+<span class="sd">        Alpha blending value for the shaded area under the curve, between 0</span>
+<span class="sd">        (no shade) and 1 (opaque). Defaults to 0</span>
+<span class="sd">    color_shade : valid matplotlib color</span>
+<span class="sd">        Color used for the shaed are under the curve. Defaults to None</span>
+<span class="sd">    bw : float</span>
+<span class="sd">        Bandwidth scaling factor. Should be larger than 0. The higher this number the smoother the</span>
+<span class="sd">        KDE will be. Defaults to 4.5 which is essentially the same as the Scott&#39;s rule of thumb</span>
+<span class="sd">        (the default rule used by SciPy).</span>
+<span class="sd">    ax : matplotlib axes</span>
+<span class="sd">    kwargs_shade : dicts, optional</span>
+<span class="sd">        Additional keywords passed to `matplotlib.axes.Axes.fill_between`</span>
+<span class="sd">        (to control the shade)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : matplotlib axes</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">kwargs_shade</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kwargs_shade</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">density</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">fast_kde</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">density</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">auto</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">shade</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">shade</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_shade</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_shade</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+<span class="k">def</span> <span class="nf">fast_kde</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="mf">4.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A fft-based Gaussian kernel density estimate (KDE)</span>
+<span class="sd">    The code was adapted from https://github.com/mfouesneau/faststats</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : Numpy array or list</span>
+<span class="sd">    bw : float</span>
+<span class="sd">        Bandwidth scaling factor for the KDE. Should be larger than 0. The higher this number the</span>
+<span class="sd">        smoother the KDE will be. Defaults to 4.5 which is essentially the same as the Scott&#39;s rule</span>
+<span class="sd">        of thumb (the default rule used by SciPy).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    density: A gridded 1D KDE of the input points (x)</span>
+<span class="sd">    xmin: minimum value of x</span>
+<span class="sd">    xmax: maximum value of x</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="mi">200</span>
+
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">std_x</span> <span class="o">=</span> <span class="n">entropy</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">)</span> <span class="o">*</span> <span class="n">bw</span>
+    <span class="k">if</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">std_x</span><span class="p">):</span>
+        <span class="n">std_x</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">grid</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">nx</span><span class="p">)</span>
+
+    <span class="n">scotts_factor</span> <span class="o">=</span> <span class="n">n</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">kern_nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scotts_factor</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">std_x</span><span class="p">)</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">kern_nx</span><span class="p">,</span> <span class="n">scotts_factor</span> <span class="o">*</span> <span class="n">std_x</span><span class="p">)</span>
+
+    <span class="n">npad</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">kern_nx</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">grid</span><span class="p">[</span><span class="n">npad</span><span class="p">:</span> <span class="mi">0</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grid</span><span class="p">,</span> <span class="n">grid</span><span class="p">[</span><span class="n">nx</span><span class="p">:</span> <span class="n">nx</span> <span class="o">-</span> <span class="n">npad</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">density</span> <span class="o">=</span> <span class="n">convolve</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)[</span><span class="n">npad</span><span class="p">:</span> <span class="n">npad</span> <span class="o">+</span> <span class="n">nx</span><span class="p">]</span>
+
+    <span class="n">norm_factor</span> <span class="o">=</span> <span class="n">n</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">std_x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">scotts_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+    <span class="n">density</span> <span class="o">=</span> <span class="n">density</span> <span class="o">/</span> <span class="n">norm_factor</span>
+
+    <span class="k">return</span> <span class="n">density</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, ArviZ devs.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

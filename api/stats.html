@@ -1,0 +1,676 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Stats &mdash; ArviZ 0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Utils" href="utils.html" />
+    <link rel="prev" title="Plots" href="plots.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="plots.html">Plots</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Stats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ArviZ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">API Reference</a> &raquo;</li>
+        
+      <li>Stats</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/stats.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="module-arviz.stats">
+<span id="stats"></span><h1>Stats<a class="headerlink" href="#module-arviz.stats" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="arviz.stats.bfmi">
+<code class="descclassname">arviz.stats.</code><code class="descname">bfmi</code><span class="sig-paren">(</span><em>trace</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/stats.html#bfmi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.bfmi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the estimated Bayesian fraction of missing information (BFMI).</p>
+<p>BFMI quantifies how well momentum resampling matches the marginal energy distribution. For more
+information on BFMI, see <a class="reference external" href="https://arxiv.org/pdf/1604.00695.pdf">https://arxiv.org/pdf/1604.00695.pdf</a>.  The current advice is that
+values smaller than 0.2 indicate poor sampling. However, this threshold is provisional and may
+change.  See <a class="reference external" href="http://mc-stan.org/users/documentation/case-studies/pystan_workflow.html">http://mc-stan.org/users/documentation/case-studies/pystan_workflow.html</a> for more
+information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>trace</strong> (<em>result of an HMC/NUTS run</em><em>, </em><em>must contain energy information</em>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>z</strong> – The Bayesian fraction of missing information of the model and trace.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.compare">
+<code class="descclassname">arviz.stats.</code><code class="descname">compare</code><span class="sig-paren">(</span><em>model_dict</em>, <em>ic='waic'</em>, <em>method='stacking'</em>, <em>b_samples=1000</em>, <em>alpha=1</em>, <em>seed=None</em>, <em>round_to=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/stats.html#compare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.compare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare models based on the widely applicable information criterion (WAIC)
+or leave-one-out (LOO) cross-validation.</p>
+<p>Read more theory here - in a paper by some of the leading authorities on
+model selection - dx.doi.org/10.1111/1467-9868.00353</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model_dict</strong> (<em>dictionary of PyMC3 traces indexed by corresponding model</em>) – </li>
+<li><strong>ic</strong> (<em>string</em>) – Information Criterion (WAIC or LOO) used to compare models.
+Default WAIC.</li>
+<li><strong>method</strong> (<em>str</em>) – <p>Method used to estimate the weights for each model. Available options are:</p>
+<ul>
+<li>’stacking’ : (default) stacking of predictive distributions.</li>
+<li><dl class="first docutils">
+<dt>’BB-pseudo-BMA’ <span class="classifier-delimiter">:</span> <span class="classifier">pseudo-Bayesian Model averaging using Akaike-type</span></dt>
+<dd>weighting. The weights are stabilized using the Bayesian bootstrap</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>’pseudo-BMA’: pseudo-Bayesian Model averaging using Akaike-type</dt>
+<dd>weighting, without Bootstrap stabilization (not recommended)</dd>
+</dl>
+</li>
+</ul>
+<p>For more information read <a class="reference external" href="https://arxiv.org/abs/1704.02030">https://arxiv.org/abs/1704.02030</a></p>
+</li>
+<li><strong>b_samples</strong> (<em>int</em>) – Number of samples taken by the Bayesian bootstrap estimation. Only
+useful when method = ‘BB-pseudo-BMA’.</li>
+<li><strong>alpha</strong> (<em>float</em>) – The shape parameter in the Dirichlet distribution used for the
+Bayesian bootstrap. Only useful when method = ‘BB-pseudo-BMA’. When
+alpha=1 (default), the distribution is uniform on the simplex. A
+smaller alpha will keeps the final weights more away from 0 and 1.</li>
+<li><strong>seed</strong> (<em>int</em><em> or </em><em>np.random.RandomState instance</em>) – If int or RandomState, use it for seeding Bayesian bootstrap. Only
+useful when method = ‘BB-pseudo-BMA’. Default None the global
+np.random state is used.</li>
+<li><strong>round_to</strong> (<em>int</em>) – Number of decimals used to round results (default 2).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><em>A DataFrame, ordered from lowest to highest IC. The index reflects</em></li>
+<li><em>the order in which the models are passed to this function. The columns are</em></li>
+<li><strong>IC</strong> (<em>Information Criteria (WAIC or LOO).</em>) – Smaller IC indicates higher out-of-sample predictive fit (“better” model).
+Default WAIC.</li>
+<li><strong>pIC</strong> (<em>Estimated effective number of parameters.</em>)</li>
+<li><strong>dIC</strong> (<em>Relative difference between each IC (WAIC or LOO)</em>)</li>
+<li><em>and the lowest IC (WAIC or LOO).</em> – It’s always 0 for the top-ranked model.</li>
+<li><strong>weight</strong> (<em>Relative weight for each model.</em>) – This can be loosely interpreted as the probability of each model
+(among the compared model) given the data. By default the uncertainty
+in the weights estimation is considered using Bayesian bootstrap.</li>
+<li><strong>SE</strong> (<em>Standard error of the IC estimate.</em>) – If method = BB-pseudo-BMA these values are estimated using Bayesian
+bootstrap.</li>
+<li><strong>dSE</strong> (<em>Standard error of the difference in IC between each model and</em>)</li>
+<li><em>the top-ranked model.</em> – It’s always 0 for the top-ranked model.</li>
+<li><strong>warning</strong> (<em>A value of 1 indicates that the computation of the IC may not be</em>) – reliable. Details see the related warning message in pm.waic and pm.loo</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.hpd">
+<code class="descclassname">arviz.stats.</code><code class="descname">hpd</code><span class="sig-paren">(</span><em>x</em>, <em>alpha=0.05</em>, <em>transform=&lt;function &lt;lambda&gt;&gt;</em>, <em>circular=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/stats.html#hpd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.hpd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate highest posterior density (HPD) of array for given alpha.</p>
+<p>The HPD is the minimum width Bayesian credible interval (BCI). This implementation works only
+for unimodal distributions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>Numpy array</em>) – An array containing posterior samples</li>
+<li><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Desired probability of type I error (defaults to 0.05)</li>
+<li><strong>transform</strong> (<em>callable</em>) – Function to transform data (defaults to identity)</li>
+<li><strong>circular</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to compute the error taking into account <cite>x</cite> is a circular variable
+(in the range [-np.pi, np.pi]) or not. Defaults to False (i.e non-circular variables).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">lower and upper value of the interval.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.loo">
+<code class="descclassname">arviz.stats.</code><code class="descname">loo</code><span class="sig-paren">(</span><em>trace</em>, <em>model</em>, <em>pointwise=False</em>, <em>reff=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/stats.html#loo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.loo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pareto-smoothed importance sampling leave-one-out cross-validation</p>
+<p>Calculates leave-one-out (LOO) cross-validation for out of sample
+predictive model fit, following Vehtari et al. (2015). Cross-validation is
+computed using Pareto-smoothed importance sampling (PSIS).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>trace</strong> (<em>result of MCMC run</em>) – </li>
+<li><strong>model</strong> (<em>PyMC Model</em>) – Optional model. Default None, taken from context.</li>
+<li><strong>pointwise</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True the pointwise predictive accuracy will be returned.
+Defaults to False</li>
+<li><strong>reff</strong> (<em>float</em><em>, </em><em>optional</em>) – relative MCMC efficiency, <cite>effective_n / n</cite> i.e. number of effective
+samples divided by the number of actual samples. Computed from trace by
+default.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><em>DataFrame with the following columns</em></li>
+<li><strong>loo</strong> (<em>approximated Leave-one-out cross-validation</em>)</li>
+<li><strong>loo_se</strong> (<em>standard error of loo</em>)</li>
+<li><strong>p_loo</strong> (<em>effective number of parameters</em>)</li>
+<li><strong>shape_warn</strong> (<em>1 if the estimated shape parameter of</em>) – Pareto distribution is greater than 0.7 for one or more samples</li>
+<li><strong>loo_i</strong> (<em>array of pointwise predictive accuracy, only if pointwise True</em>)</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.r2_score">
+<code class="descclassname">arviz.stats.</code><code class="descname">r2_score</code><span class="sig-paren">(</span><em>y_true</em>, <em>y_pred</em>, <em>round_to=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/stats.html#r2_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.r2_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>R-squared for Bayesian regression models. Only valid for linear models.
+<a class="reference external" href="http://www.stat.columbia.edu/%7Egelman/research/unpublished/bayes_R2.pdf">http://www.stat.columbia.edu/%7Egelman/research/unpublished/bayes_R2.pdf</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y_true</strong> (<em>: array-like of shape =</em><em> (</em><em>n_samples</em><em>) or </em><em>(</em><em>n_samples</em><em>, </em><em>n_outputs</em><em>)</em>) – Ground truth (correct) target values.</li>
+<li><strong>y_pred</strong> (<em>array-like of shape =</em><em> (</em><em>n_samples</em><em>) or </em><em>(</em><em>n_samples</em><em>, </em><em>n_outputs</em><em>)</em>) – Estimated target values.</li>
+<li><strong>round_to</strong> (<em>int</em>) – Number of decimals used to round results (default 2).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><em>Pandas Series with the following indices</em></li>
+<li><strong>R2_median</strong> (<em>median of the Bayesian R2</em>)</li>
+<li><strong>R2_mean</strong> (<em>mean of the Bayesian R2</em>)</li>
+<li><strong>R2_std</strong> (<em>standard deviation of the Bayesian R2</em>)</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.summary">
+<code class="descclassname">arviz.stats.</code><code class="descname">summary</code><span class="sig-paren">(</span><em>trace</em>, <em>varnames=None</em>, <em>round_to=2</em>, <em>transform=&lt;function &lt;lambda&gt;&gt;</em>, <em>circ_varnames=None</em>, <em>stat_funcs=None</em>, <em>extend=False</em>, <em>alpha=0.05</em>, <em>skip_first=0</em>, <em>batches=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/stats.html#summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a data frame with summary statistics.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>trace</strong> (<em>Pandas DataFrame</em><em> or </em><em>PyMC3 trace</em>) – Posterior samples</li>
+<li><strong>varnames</strong> (<em>list</em>) – Names of variables to include in summary</li>
+<li><strong>round_to</strong> (<em>int</em>) – Controls formatting for floating point numbers. Default 2.</li>
+<li><strong>transform</strong> (<em>callable</em>) – Function to transform data (defaults to identity)</li>
+<li><strong>circ_varnames</strong> (<em>list</em>) – Names of circular variables to include in summary</li>
+<li><strong>stat_funcs</strong> (<em>None</em><em> or </em><em>list</em>) – <p>A list of functions used to calculate statistics. By default, the mean, standard deviation,
+simulation standard error, and highest posterior density intervals are included.</p>
+<p>The functions will be given one argument, the samples for a variable as a 2 dimensional
+array, where the first axis corresponds to sampling iterations and the second axis
+represents the flattened variable (e.g., x__0, x__1,…). Each function should return either</p>
+<ol class="arabic">
+<li>A <cite>pandas.Series</cite> instance containing the result of calculating the statistic along the
+first axis. The name attribute will be taken as the name of the statistic.</li>
+<li>A <cite>pandas.DataFrame</cite> where each column contains the result of calculating the statistic
+along the first axis. The column names will be taken as the names of the statistics.</li>
+</ol>
+</li>
+<li><strong>extend</strong> (<em>boolean</em>) – If True, use the statistics returned by <cite>stat_funcs</cite> in addition to, rather than in place
+of, the default statistics. This is only meaningful when <cite>stat_funcs</cite> is not None.</li>
+<li><strong>include_transformed</strong> (<em>bool</em>) – Flag for reporting automatically transformed variables in addition to original variables
+(defaults to False).</li>
+<li><strong>alpha</strong> (<em>float</em>) – The alpha level for generating posterior intervals. Defaults to 0.05. This is only
+meaningful when <cite>stat_funcs</cite> is None.</li>
+<li><strong>skip_first</strong> (<em>int</em>) – Number of first samples not shown in plots (burn-in).</li>
+<li><strong>batches</strong> (<em>None</em><em> or </em><em>int</em>) – Batch size for calculating standard deviation for non-independent samples. Defaults to the
+smaller of 100 or the number of samples. This is only meaningful when <cite>stat_funcs</cite> is None.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>`pandas.DataFrame` with summary statistics for each variable Defaults one are</strong> (<cite>mean</cite>, <cite>sd</cite>,)</li>
+<li><cite>mc_error</cite>, <cite>hpd_2.5</cite>, <cite>hpd_97.5</cite>, <cite>n_eff</cite> and <cite>Rhat</cite>. Last two are only computed for traces</li>
+<li><em>with 2 or more chains.</em></li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">])</span>
+           <span class="n">mean</span>        <span class="n">sd</span>  <span class="n">mc_error</span>     <span class="n">hpd_5</span>    <span class="n">hpd_95</span>  <span class="n">n_eff</span>      <span class="n">Rhat</span>
+<span class="n">mu__0</span>  <span class="mf">0.106897</span>  <span class="mf">0.066473</span>  <span class="mf">0.001818</span> <span class="o">-</span><span class="mf">0.020612</span>  <span class="mf">0.231626</span>  <span class="mf">487.0</span>   <span class="mf">1.00001</span>
+<span class="n">mu__1</span> <span class="o">-</span><span class="mf">0.046597</span>  <span class="mf">0.067513</span>  <span class="mf">0.002048</span> <span class="o">-</span><span class="mf">0.174753</span>  <span class="mf">0.081924</span>  <span class="mf">379.0</span>   <span class="mf">1.00203</span>
+</pre></div>
+</div>
+<p>Other statistics can be calculated by passing a list of functions.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">trace_sd</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="o">...</span>     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sd&#39;</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">trace_quantiles</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="o">...</span>     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pm</span><span class="o">.</span><span class="n">quantiles</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">95</span><span class="p">]))</span>
+<span class="o">...</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">az</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span> <span class="n">stat_funcs</span><span class="o">=</span><span class="p">[</span><span class="n">trace_sd</span><span class="p">,</span> <span class="n">trace_quantiles</span><span class="p">])</span>
+             <span class="n">sd</span>         <span class="mi">5</span>        <span class="mi">50</span>        <span class="mi">95</span>
+<span class="n">mu__0</span>  <span class="mf">0.066473</span>  <span class="mf">0.000312</span>  <span class="mf">0.105039</span>  <span class="mf">0.214242</span>
+<span class="n">mu__1</span>  <span class="mf">0.067513</span> <span class="o">-</span><span class="mf">0.159097</span> <span class="o">-</span><span class="mf">0.045637</span>  <span class="mf">0.062912</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.waic">
+<code class="descclassname">arviz.stats.</code><code class="descname">waic</code><span class="sig-paren">(</span><em>trace</em>, <em>model</em>, <em>pointwise=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/stats.html#waic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.waic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the widely available information criterion, its standard error
+and the effective number of parameters of the samples in trace from model.
+Read more theory here - in a paper by some of the leading authorities on
+model selection - dx.doi.org/10.1111/1467-9868.00353</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>trace</strong> (<em>result of MCMC run</em>) – </li>
+<li><strong>model</strong> (<em>Probabilistic Model</em>) – </li>
+<li><strong>pointwise</strong> (<em>bool</em>) – if True the pointwise predictive accuracy will be returned.
+Default False</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><em>DataFrame with the following columns</em></li>
+<li><strong>waic</strong> (<em>widely available information criterion</em>)</li>
+<li><strong>waic_se</strong> (<em>standard error of waic</em>)</li>
+<li><strong>p_waic</strong> (<em>effective number parameters</em>)</li>
+<li><strong>var_warn</strong> (<em>1 if posterior variance of the log predictive</em>) – densities exceeds 0.4</li>
+<li><strong>waic_i</strong> (<em>and array of the pointwise predictive accuracy, only if pointwise True</em>)</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.effective_n">
+<code class="descclassname">arviz.stats.</code><code class="descname">effective_n</code><span class="sig-paren">(</span><em>trace</em>, <em>varnames=None</em>, <em>round_to=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/diagnostics.html#effective_n"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.effective_n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns estimate of the effective sample size of a set of traces.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>trace</strong> (<em>Pandas DataFrame</em><em> or </em><em>PyMC3 trace</em>) – Posterior samples. At least 2 chains are needed to compute this diagnostic
+of one or more stochastic parameters.</li>
+<li><strong>varnames</strong> (<em>list</em>) – Names of variables to include in the effective_n report</li>
+<li><strong>round_to</strong> (<em>int</em>) – Controls formatting for floating point numbers. Default 2.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>n_eff</strong> – Return the effective sample size, <span class="math notranslate nohighlight">\(\hat{n}_{eff}\)</span></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dictionary of floats (MultiTrace) or float (trace object)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The diagnostic is computed by:</p>
+<div class="math notranslate nohighlight">
+\[\hat{n}_{eff} = \frac{mn}{1 + 2 \sum_{t=1}^T \hat{\rho}_t}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\hat{\rho}_t\)</span> is the estimated _autocorrelation at lag t, and T
+is the first odd positive integer for which the sum
+<span class="math notranslate nohighlight">\(\hat{\rho}_{T+1} + \hat{\rho}_{T+1}\)</span> is negative.</p>
+<p>The current implementation is similar to Stan, which uses Geyer’s initial
+monotone sequence criterion (Geyer, 1992; Geyer, 2011).</p>
+<p class="rubric">References</p>
+<p>Gelman et al. BDA (2014)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.gelman_rubin">
+<code class="descclassname">arviz.stats.</code><code class="descname">gelman_rubin</code><span class="sig-paren">(</span><em>trace</em>, <em>varnames=None</em>, <em>round_to=2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/diagnostics.html#gelman_rubin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.gelman_rubin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns estimate of R for a set of traces.</p>
+<p>The Gelman-Rubin diagnostic tests for lack of convergence by comparing the variance between
+multiple chains to the variance within each chain. If convergence has been achieved, the
+between-chain and within-chain variances should be identical. To be most effective in
+detecting evidence for nonconvergence, each chain should have been initialized to starting
+values that are dispersed relative to the target distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>trace</strong> (<em>Pandas DataFrame</em><em> or </em><em>PyMC3 trace</em>) – Posterior samples. at least 2 chains are needed to compute this diagnostic</li>
+<li><strong>varnames</strong> (<em>list</em>) – Names of variables to include in the rhat report</li>
+<li><strong>round_to</strong> (<em>int</em>) – Controls formatting for floating point numbers. Default 2.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>Rhat</strong> – Returns dictionary of the potential scale reduction
+factors, <span class="math notranslate nohighlight">\(\hat{R}\)</span></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict of floats (MultiTrace) or float (trace object)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The diagnostic is computed by:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\hat{R} = \frac{\hat{V}}{W}\]</div>
+</div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(W\)</span> is the within-chain variance and <span class="math notranslate nohighlight">\(\hat{V}\)</span> is the posterior variance
+estimate for the pooled traces. This is the potential scale reduction factor, which converges
+to unity when each of the traces is a sample from the target posterior. Values greater than one
+indicate that one or more chains have not yet converged.</p>
+<p class="rubric">References</p>
+<p>Brooks and Gelman (1998)
+Gelman and Rubin (1992)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="arviz.stats.geweke">
+<code class="descclassname">arviz.stats.</code><code class="descname">geweke</code><span class="sig-paren">(</span><em>trace</em>, <em>varnames=None</em>, <em>first=0.1</em>, <em>last=0.5</em>, <em>intervals=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arviz/stats/diagnostics.html#geweke"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arviz.stats.geweke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return z-scores for convergence diagnostics.</p>
+<p>Compare the mean of the first % of series with the mean of the last % of series. x is divided
+into a number of segments for which this difference is computed. If the series is converged,
+this score should oscillate between -1 and 1.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>array-like</em>) – The trace of some stochastic parameter.</li>
+<li><strong>first</strong> (<em>float</em>) – The fraction of series at the beginning of the trace.</li>
+<li><strong>last</strong> (<em>float</em>) – The fraction of series at the end to be compared with the section
+at the beginning.</li>
+<li><strong>intervals</strong> (<em>int</em>) – The number of segments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>scores</strong> – Return a list of [i, score], where i is the starting index for each
+interval and score the Geweke score on the interval.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list [[]]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The Geweke score on some series x is computed by:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\frac{E[x_s] - E[x_e]}{\sqrt{V[x_s] + V[x_e]}}\]</div>
+</div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(E\)</span> stands for the mean, <span class="math notranslate nohighlight">\(V\)</span> the variance,
+<span class="math notranslate nohighlight">\(x_s\)</span> a section at the start of the series and
+<span class="math notranslate nohighlight">\(x_e\)</span> a section at the end of the series.</p>
+<p class="rubric">References</p>
+<p>Geweke (1992)</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="plots.html" class="btn btn-neutral" title="Plots" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, ArviZ devs.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

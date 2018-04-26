@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arviz.plots.compareplot &mdash; ArviZ 0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ArviZ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>arviz.plots.compareplot</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for arviz.plots.compareplot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+
+<div class="viewcode-block" id="compareplot"><a class="viewcode-back" href="../../../api/plots.html#arviz.plots.compareplot">[docs]</a><span class="k">def</span> <span class="nf">compareplot</span><span class="p">(</span><span class="n">comp_df</span><span class="p">,</span> <span class="n">insample_dev</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">se</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Summary plot for model comparison.</span>
+
+<span class="sd">    This plot is in the style of the one used in the book Statistical Rethinking</span>
+<span class="sd">    by Richard McElreath.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    comp_df: DataFrame</span>
+<span class="sd">        the result of the `compare()` function</span>
+<span class="sd">    insample_dev : bool, optional</span>
+<span class="sd">        plot the in-sample deviance, that is the value of the IC without the penalization given by</span>
+<span class="sd">        the effective number of parameters (pIC). Defaults to True</span>
+<span class="sd">    se : bool, optional</span>
+<span class="sd">        plot the standard error of the IC estimate. Defaults to True</span>
+<span class="sd">    dse : bool, optional</span>
+<span class="sd">        plot standard error of the difference in IC between each model and the top-ranked model.</span>
+<span class="sd">        Defaults to True</span>
+<span class="sd">    figsize : tuple, optional</span>
+<span class="sd">        Figure size</span>
+<span class="sd">    plot_kwargs : dict, optional</span>
+<span class="sd">        Optional arguments for plot elements. Currently accepts &#39;color_ic&#39;,</span>
+<span class="sd">        &#39;marker_ic&#39;, &#39;color_insample_dev&#39;, &#39;marker_insample_dev&#39;, &#39;color_dse&#39;,</span>
+<span class="sd">        &#39;marker_dse&#39;, &#39;ls_min_ic&#39; &#39;color_ls_min_ic&#39;,  &#39;fontsize&#39;</span>
+<span class="sd">    ax : axes, optional</span>
+<span class="sd">        Matplotlib axes</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib axes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plot_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">yticks_pos</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">comp_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                                   <span class="n">retstep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">yticks_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">yticks_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">step</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">yticks_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">yticks_pos</span><span class="p">)</span>
+
+    <span class="n">ic</span> <span class="o">=</span> <span class="s1">&#39;waic&#39;</span>
+    <span class="k">if</span> <span class="n">ic</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">comp_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">ic</span> <span class="o">=</span> <span class="s1">&#39;loo&#39;</span>
+
+    <span class="k">if</span> <span class="n">dse</span><span class="p">:</span>
+        <span class="n">yticks_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">yticks_labels</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp_df</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">yticks_pos</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">comp_df</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                    <span class="n">y</span><span class="o">=</span><span class="n">yticks_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span>
+                    <span class="n">xerr</span><span class="o">=</span><span class="n">comp_df</span><span class="o">.</span><span class="n">dse</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;color_dse&#39;</span><span class="p">,</span> <span class="s1">&#39;grey&#39;</span><span class="p">),</span>
+                    <span class="n">fmt</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker_dse&#39;</span><span class="p">,</span> <span class="s1">&#39;^&#39;</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">yticks_labels</span> <span class="o">=</span> <span class="n">comp_df</span><span class="o">.</span><span class="n">index</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">yticks_pos</span><span class="p">[::</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">se</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">comp_df</span><span class="p">[</span><span class="n">ic</span><span class="p">],</span>
+                    <span class="n">y</span><span class="o">=</span><span class="n">yticks_pos</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span>
+                    <span class="n">xerr</span><span class="o">=</span><span class="n">comp_df</span><span class="o">.</span><span class="n">se</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;color_ic&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">),</span>
+                    <span class="n">fmt</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker_ic&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">),</span>
+                    <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                    <span class="n">mew</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">comp_df</span><span class="p">[</span><span class="n">ic</span><span class="p">],</span>
+                <span class="n">yticks_pos</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;color_ic&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">),</span>
+                <span class="n">marker</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker_ic&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">),</span>
+                <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+                <span class="n">mew</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">insample_dev</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">comp_df</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">comp_df</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="o">+</span><span class="n">ic</span><span class="p">]),</span>
+                <span class="n">yticks_pos</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;color_insample_dev&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">),</span>
+                <span class="n">marker</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker_insample_dev&#39;</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">),</span>
+                <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">comp_df</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+               <span class="n">ls</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ls_min_ic&#39;</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">),</span>
+               <span class="n">color</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;color_ls_min_ic&#39;</span><span class="p">,</span> <span class="s1">&#39;grey&#39;</span><span class="p">))</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Deviance&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">plot_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fontsize&#39;</span><span class="p">,</span> <span class="mi">14</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">yticks_labels</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="n">step</span><span class="p">,</span> <span class="mi">0</span> <span class="o">-</span> <span class="n">step</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, ArviZ devs.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

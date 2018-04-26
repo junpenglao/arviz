@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arviz.plots.posteriorplot &mdash; ArviZ 0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ArviZ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>arviz.plots.posteriorplot</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for arviz.plots.posteriorplot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">mode</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">kdeplot</span>
+<span class="kn">from</span> <span class="nn">.kdeplot</span> <span class="k">import</span> <span class="n">fast_kde</span>
+<span class="kn">from</span> <span class="nn">..stats</span> <span class="k">import</span> <span class="n">hpd</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">trace_to_dataframe</span><span class="p">,</span> <span class="n">expand_variable_names</span>
+<span class="kn">from</span> <span class="nn">.plot_utils</span> <span class="k">import</span> <span class="n">identity_transform</span>
+
+
+<div class="viewcode-block" id="posteriorplot"><a class="viewcode-back" href="../../../api/plots.html#arviz.plots.posteriorplot">[docs]</a><span class="k">def</span> <span class="nf">posteriorplot</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">varnames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">identity_transform</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">textsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+                  <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">round_to</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">point_estimate</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">rope</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_first</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot Posterior densities in the style of John K. Kruschke&#39;s book.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trace : Pandas DataFrame or PyMC3 trace</span>
+<span class="sd">        Posterior samples</span>
+<span class="sd">    varnames : list of variable names</span>
+<span class="sd">        Variables to be plotted, if None all variable are plotted</span>
+<span class="sd">    transform : callable</span>
+<span class="sd">        Function to transform data (defaults to identity)</span>
+<span class="sd">    figsize : tuple</span>
+<span class="sd">        Figure size. If None, size is (12, num of variables * 2)</span>
+<span class="sd">    textsize : int</span>
+<span class="sd">        Text size of the point_estimates, axis ticks, and HPD (Default:14)</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        Defines range for High Posterior Density</span>
+<span class="sd">    round_to : int</span>
+<span class="sd">        Controls formatting for floating point numbers</span>
+<span class="sd">    point_estimate: str</span>
+<span class="sd">        Must be in (&#39;mode&#39;, &#39;mean&#39;, &#39;median&#39;)</span>
+<span class="sd">    rope: list or numpy array</span>
+<span class="sd">        Lower and upper values of the Region Of Practical Equivalence</span>
+<span class="sd">    ref_val: float or list-like</span>
+<span class="sd">        display the percentage below and above the values in ref_val. If a list is provided, its</span>
+<span class="sd">        length should match the number of variables.</span>
+<span class="sd">    kind: str</span>
+<span class="sd">        `kde` or `hist`. The former will plot a KDE, the last one a histogram. For discrete</span>
+<span class="sd">        variables a this argument is ignored and a histogram is always used.</span>
+<span class="sd">    bw : float</span>
+<span class="sd">        Bandwidth scaling factor for the KDE. Should be larger than 0. The higher this number the</span>
+<span class="sd">        smoother the KDE will be. Defaults to 4.5 which is essentially the same as the Scott&#39;s rule</span>
+<span class="sd">        of thumb (the default rule used by SciPy). Only works if `kind == kde` is True.</span>
+<span class="sd">    bins : integer or sequence or &#39;auto&#39;, optional</span>
+<span class="sd">        Controls the number of bins, accepts the same keywords `matplotlib.hist()` does. Only works</span>
+<span class="sd">        if `kind == hist` is True. If None (default) it will use `auto` for continuous variables and</span>
+<span class="sd">        `range(xmin, xmax + 1)` for discrete variables.</span>
+<span class="sd">    skip_first : int</span>
+<span class="sd">        Number of first samples not shown in plots (burn-in).</span>
+<span class="sd">    ax : axes</span>
+<span class="sd">        Matplotlib axes. Defaults to None.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Passed as-is to plt.hist() or plt.plot() function depending on the value of `kind`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib axes</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">trace_to_dataframe</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">combined</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">skip_first</span><span class="p">:]</span>
+
+    <span class="k">if</span> <span class="n">varnames</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">varnames</span> <span class="o">=</span> <span class="n">expand_variable_names</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">varnames</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="n">varnames</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">_create_axes_grid</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+    <span class="n">var_num</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">ref_val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ref_val</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">var_num</span>
+    <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">ref_val</span><span class="p">):</span>
+        <span class="n">ref_val</span> <span class="o">=</span> <span class="p">[</span><span class="n">ref_val</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">var_num</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">rope</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rope</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">var_num</span>
+    <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">rope</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">rope</span> <span class="o">=</span> <span class="p">[</span><span class="n">rope</span><span class="p">]</span> <span class="o">*</span> <span class="n">var_num</span>
+
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">ax</span><span class="p">),</span> <span class="n">trace</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+        <span class="n">tr_values</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">trace</span><span class="p">[</span><span class="n">v</span><span class="p">])</span>
+
+        <span class="n">_plot_posterior_op</span><span class="p">(</span><span class="n">tr_values</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="n">bw</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">point_estimate</span><span class="o">=</span><span class="n">point_estimate</span><span class="p">,</span>
+                           <span class="n">round_to</span><span class="o">=</span><span class="n">round_to</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">ref_val</span><span class="o">=</span><span class="n">ref_val</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">rope</span><span class="o">=</span><span class="n">rope</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                           <span class="n">textsize</span><span class="o">=</span><span class="n">_scale_text</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="n">textsize</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">_scale_text</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="n">textsize</span><span class="p">))</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+<span class="k">def</span> <span class="nf">_plot_posterior_op</span><span class="p">(</span><span class="n">trace_values</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">point_estimate</span><span class="p">,</span> <span class="n">round_to</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ref_val</span><span class="p">,</span> <span class="n">rope</span><span class="p">,</span>
+                       <span class="n">textsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Artist to draw posterior.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">format_as_percent</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">round_to</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;{0:.</span><span class="si">{1:d}</span><span class="s1">f}%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">round_to</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">display_ref_val</span><span class="p">(</span><span class="n">ref_val</span><span class="p">):</span>
+        <span class="n">less_than_ref_probability</span> <span class="o">=</span> <span class="p">(</span><span class="n">trace_values</span> <span class="o">&lt;</span> <span class="n">ref_val</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">greater_than_ref_probability</span> <span class="o">=</span> <span class="p">(</span><span class="n">trace_values</span> <span class="o">&gt;=</span> <span class="n">ref_val</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">ref_in_posterior</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> &lt;</span><span class="si">{:g}</span><span class="s2">&lt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">format_as_percent</span><span class="p">(</span><span class="n">less_than_ref_probability</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                                 <span class="n">ref_val</span><span class="p">,</span>
+                                                 <span class="n">format_as_percent</span><span class="p">(</span><span class="n">greater_than_ref_probability</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">ref_val</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=.</span><span class="mi">75</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.65</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">trace_values</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">ref_in_posterior</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">textsize</span><span class="p">,</span>
+                <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">display_rope</span><span class="p">(</span><span class="n">rope</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rope</span><span class="p">,</span> <span class="p">(</span><span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">,</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">),</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C2&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
+        <span class="n">text_props</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">textsize</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C2&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">rope</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.14</span><span class="p">,</span> <span class="n">rope</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">text_props</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">rope</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.14</span><span class="p">,</span> <span class="n">rope</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">text_props</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">display_point_estimate</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">point_estimate</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">point_estimate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Point Estimate should be in (&#39;mode&#39;,&#39;mean&#39;,&#39;median&#39;)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">point_estimate</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+            <span class="n">point_value</span> <span class="o">=</span> <span class="n">trace_values</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">point_estimate</span> <span class="o">==</span> <span class="s1">&#39;mode&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trace_values</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">density</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">fast_kde</span><span class="p">(</span><span class="n">trace_values</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">density</span><span class="p">))</span>
+                <span class="n">point_value</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">density</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">point_value</span> <span class="o">=</span> <span class="n">mode</span><span class="p">(</span><span class="n">trace_values</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">round_to</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">point_estimate</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
+            <span class="n">point_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">trace_values</span><span class="p">)</span>
+        <span class="n">point_text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{point_estimate}</span><span class="s1">={point_value:.</span><span class="si">{round_to}</span><span class="s1">f}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">point_estimate</span><span class="o">=</span><span class="n">point_estimate</span><span class="p">,</span>
+                                                                          <span class="n">point_value</span><span class="o">=</span><span class="n">point_value</span><span class="p">,</span> <span class="n">round_to</span><span class="o">=</span><span class="n">round_to</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">point_value</span><span class="p">,</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">point_text</span><span class="p">,</span>
+                <span class="n">size</span><span class="o">=</span><span class="n">textsize</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">display_hpd</span><span class="p">():</span>
+        <span class="n">hpd_intervals</span> <span class="o">=</span> <span class="n">hpd</span><span class="p">(</span><span class="n">trace_values</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hpd_intervals</span><span class="p">,</span> <span class="p">(</span><span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">,</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpd_intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">,</span>
+                <span class="n">hpd_intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">round_to</span><span class="p">),</span>
+                <span class="n">size</span><span class="o">=</span><span class="n">textsize</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpd_intervals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">,</span>
+                <span class="n">hpd_intervals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">round_to</span><span class="p">),</span>
+                <span class="n">size</span><span class="o">=</span><span class="n">textsize</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">hpd_intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">hpd_intervals</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">plot_height</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">,</span>
+                <span class="n">format_as_percent</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; HPD&#39;</span><span class="p">,</span>
+                <span class="n">size</span><span class="o">=</span><span class="n">textsize</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_axes</span><span class="p">():</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">([])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;out&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                       <span class="n">color</span><span class="o">=</span><span class="s1">&#39;0.5&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">textsize</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;0.5&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_key_if_doesnt_exist</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;kde&#39;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trace_values</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">kdeplot</span><span class="p">(</span><span class="n">trace_values</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span>
+            <span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">bw</span><span class="o">=</span><span class="n">bw</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trace_values</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;i&#39;</span><span class="p">:</span>
+                <span class="n">xmin</span> <span class="o">=</span> <span class="n">trace_values</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+                <span class="n">xmax</span> <span class="o">=</span> <span class="n">trace_values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="n">bins</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bins</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
+        <span class="n">set_key_if_doesnt_exist</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="s1">&#39;align&#39;</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">)</span>
+        <span class="n">set_key_if_doesnt_exist</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">trace_values</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plot_height</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">format_axes</span><span class="p">()</span>
+    <span class="n">display_hpd</span><span class="p">()</span>
+    <span class="n">display_point_estimate</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ref_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">display_ref_val</span><span class="p">(</span><span class="n">ref_val</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rope</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">display_rope</span><span class="p">(</span><span class="n">rope</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_scale_text</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="n">textsize</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Scale text to figsize.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">textsize</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">figsize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">11</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">12</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">figsize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">textsize</span>
+
+
+<span class="k">def</span> <span class="nf">_create_axes_grid</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="n">trace</span><span class="p">):</span>
+    <span class="n">l_trace</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">l_trace</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">l_trace</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">n</span> <span class="o">*</span> <span class="mf">2.5</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">l_trace</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ax</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, ArviZ devs.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
